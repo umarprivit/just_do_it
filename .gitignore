@@ -1,0 +1,33 @@
+.env
+# Node modules
+node_modules/
+# Build output
+dist/
+# Dependency directories
+bower_components/
+# System files
+.DS_Store
+# Logs
+logs
+yarn-debug.log*
+# IDE files
+.vscode/
+# Coverage directory used by tools like istanbul
+coverage/
+# Temporary files
+tmp/
+# Environment variables
+.env.local
+# Build artifacts
+
+build/
+# Miscellaneous
+.idea/
+# Ignore npm package lock file
+package-lock.json
+# Ignore yarn lock file
+yarn.lock
+# Ignore pnpm lock file
+pnpm-lock.yaml
+
+

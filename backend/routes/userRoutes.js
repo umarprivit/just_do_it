@@ -1,11 +1,27 @@
 import express from "express";
-import { register, login, getMe } from "../controllers/userController.js";
-import authMiddleware from "../middlewares/auth.js";
+import {
+  registerUser,
+  loginUser,
+  getProfile,
+  updateProfile,
+  searchProviders,
+  verifyOtpAndCreateUser,
+} from "../controllers/userController.js";
+
+import { protect } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.get("/me", authMiddleware, getMe);
+// Public routes
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.post("/verify-otp", verifyOtpAndCreateUser);
+
+// Protected routes
+router.get("/profile", protect, getProfile);
+router.put("/profile", protect, updateProfile);
+
+// Search providers (public or protected based on your choice)
+router.get("/providers", searchProviders);
 
 export default router;

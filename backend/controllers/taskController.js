@@ -4,16 +4,34 @@ import User from "../models/User.js";
 export const createTask = async (req, res) => {
   const { title, description, category, location, budget, scheduledAt } =
     req.body;
-  const task = await Task.create({
-    title,
-    description,
-    category,
-    location,
-    budget,
-    scheduledAt,
-    client: req.user._id,
-  });
-  res.status(201).json(task);
+
+  //validations
+  if (
+    !title ||
+    !description ||
+    !category ||
+    !location ||
+    !budget ||
+    !scheduledAt
+  ) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+  try {
+    const task = await Task.create({
+      title,
+      description,
+      category,
+      location,
+      budget,
+      scheduledAt,
+      client: req.user._id,
+    });
+    res.status(201).json(task);
+  } catch (err) {
+    return res.status(400).json({
+      error: err._message,
+    });
+  }
 };
 
 export const bookProvider = async (req, res) => {
@@ -69,17 +87,16 @@ export const completeTask = async (req, res) => {
   await awardPoints(task.client._id, 10);
   await awardPoints(task.provider._id, 20);
 
-  
-//   await sendEmail(
-//     task.client.email,
-//     "Task Completed",
-//     "Your task was completed successfully."
-//   );
-//   await sendEmail(
-//     task.provider.email,
-//     "Task Completed",
-//     "You successfully completed a task."
-//   );
+  //   await sendEmail(
+  //     task.client.email,
+  //     "Task Completed",
+  //     "Your task was completed successfully."
+  //   );
+  //   await sendEmail(
+  //     task.provider.email,
+  //     "Task Completed",
+  //     "You successfully completed a task."
+  //   );
 
   res.json(task);
 };

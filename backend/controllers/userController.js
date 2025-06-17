@@ -1,5 +1,7 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt"; // Make sure you have this installed
+import { sendEmail } from "../utils/email.js";
 
 // utils/tempStore.js
 let pendingRegistrations = new Map();
@@ -26,13 +28,14 @@ export const registerUser = async (req, res) => {
     email,
     "Tasker Email OTP",
     `Your OTP is ${otp}`,
-    `<p>Your OTP is <strong>${otp}</strong>. It is valid for 20 seconds.</p>`
+    `<p>Your OTP is <strong>${otp}</strong>. It is valid for 30 seconds.</p>`
   );
 
   // Store in temp map
+  console.log("OTP FOR ", email, "is ", otp);
   const timeout = setTimeout(() => {
     pendingRegistrations.delete(email);
-  }, 20000);
+  }, 30000);
 
   pendingRegistrations.set(email, {
     data: { name, email, phone, password, role, skills },
@@ -40,24 +43,43 @@ export const registerUser = async (req, res) => {
     timeout,
   });
 
-  res.json({ message: "OTP sent. Please verify within 20 seconds." });
+  res.json({ message: "OTP sent. Please verify within 30 seconds." });
 };
 
-// Login
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-  if (user && (await user.matchPassword(password))) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(401).json({ error: "Invalid credentials" });
+    // Input validation
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ error: "Invalid credentials - User not found" });
+    }
+
+    // Try bcrypt compare
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+    if (isPasswordValid) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ error: "Invalid credentials - Wrong password" });
+    }
+  } catch (error) {
+    console.log("error in login method ",error);
+    res.status(500).json({ error: "Server error during login" });
   }
 };
 
@@ -70,10 +92,22 @@ export const updateProfile = async (req, res) => {
   const user = req.user;
   const updates = req.body;
 
+
   if (updates.password) {
-    updates.passwordHash = await User.hashPassword(updates.password);
+    // Validate password
+    if (updates.password.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 6 characters long" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    updates.passwordHash = await bcrypt.hash(updates.password, salt);
+
+    updates.passwordHash = user.passwordHash;
+
     delete updates.password;
   }
+  // Remove plain password from updates
 
   Object.assign(user, updates);
   await user.save();
@@ -106,26 +140,39 @@ export const verifyOtpAndCreateUser = async (req, res) => {
     return res.status(400).json({ error: "Invalid OTP" });
   }
 
-  const { name, phone, password, role, skills } = pending.data;
-  const passwordHash = await User.hashPassword(password);
-
-  const user = await User.create({
-    name,
-    email,
-    phone,
-    passwordHash,
-    role,
-    skills,
-  });
-
+  // Clear the timeout
   clearTimeout(pending.timeout);
   pendingRegistrations.delete(email);
 
-  res.status(201).json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    token: generateToken(user._id),
-  });
+  try {
+    const { name, email, phone, password, role, skills } = pending.data;
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // Create user with the hashed password
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      passwordHash, // Use the hash we just created
+      role,
+      skills: role === "provider" ? skills : [],
+      isVerified: true,
+      rating: 0,
+      reviewCount: 0,
+      points: 0,
+    });
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error("User creation error:", error.message);
+    res.status(500).json({ error: "Failed to create user" });
+  }
 };

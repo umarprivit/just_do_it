@@ -7,9 +7,11 @@ import { ThemeContext } from "./contexts/ThemeContext";
 import Login from "./pages/auth/Login";
 import DashboardProvider from "./pages/dashboard/DashboardProvider";
 import ProtectedRoute from "./components/ProtectedRoutes";
-import PostTask from "./pages/PostTask";
+import PostTask from "./pages/tasks/PostTask";
 import DashboardClient from "./pages/dashboard/DashboardClient";
 import Register from "./pages/auth/Register";
+import Profile from "./pages/Profile";
+import ViewTaskDetail from "./pages/tasks/ViewTaskDetail";
 
 function App() {
   const { state, toggleTheme } = useContext(ThemeContext);
@@ -39,14 +41,19 @@ function App() {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/register" element={<Register />}></Route>
         <Route path="/dashboard" element={<DashboardClient />}></Route>
-        <Route
+        <Route path="/dashboard/p" element={<DashboardProvider />}></Route>
+        <Route path="/profile" element={<Profile />}></Route>
+        <Route path="/post-task" element={<PostTask />}></Route>
+        <Route path="/view/:taskId" element={<ViewTaskDetail />}></Route>
+
+        {/* <Route
           path="/provider/dashboard"
           element={
             <ProtectedRoute allowedRoles={["provider"]}>
               <DashboardProvider />
             </ProtectedRoute>
           }
-        ></Route>
+        ></Route> */}
         {/* <Route
           path="/client/dashboard"
           element={

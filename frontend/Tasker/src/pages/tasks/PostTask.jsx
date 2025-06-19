@@ -42,7 +42,7 @@ const PostTask = () => {
   const toggleProfileDropdown = () =>
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
 
-  // Get current location using GPS and convert to readable address
+  // Get current location using GPS (coordinates only)
   const getCurrentLocation = () => {
     setIsGettingLocation(true);
 
@@ -53,77 +53,10 @@ const PostTask = () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const { latitude, longitude } = position.coords;
-        
-        try {
-          // Use Nominatim (OpenStreetMap) reverse geocoding - free service
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
-            {
-              headers: {
-                'User-Agent': 'TaskerApp/1.0' // Required by Nominatim
-              }
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            
-            if (data && data.address) {
-              // Build a readable address from the components
-              let addressParts = [];
-              
-              // Add house number and street
-              if (data.address.house_number && data.address.road) {
-                addressParts.push(`${data.address.house_number} ${data.address.road}`);
-              } else if (data.address.road) {
-                addressParts.push(data.address.road);
-              }
-              
-              // Add neighborhood or suburb
-              if (data.address.neighbourhood) {
-                addressParts.push(data.address.neighbourhood);
-              } else if (data.address.suburb) {
-                addressParts.push(data.address.suburb);
-              }
-              
-              // Add city
-              if (data.address.city) {
-                addressParts.push(data.address.city);
-              } else if (data.address.town) {
-                addressParts.push(data.address.town);
-              } else if (data.address.village) {
-                addressParts.push(data.address.village);
-              }
-              
-              // Add state/region
-              if (data.address.state) {
-                addressParts.push(data.address.state);
-              }
-              
-              // Add country
-              if (data.address.country) {
-                addressParts.push(data.address.country);
-              }
-              
-              // Join with commas and set as location
-              const readableAddress = addressParts.join(', ');
-              setCurrentLocation(readableAddress || data.display_name);
-            } else {
-              // Fallback to coordinates if no address data
-              setCurrentLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
-            }
-          } else {
-            // Fallback to coordinates if API fails
-            setCurrentLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
-          }
-        } catch (error) {
-          console.error("Error getting address:", error);
-          // Fallback to coordinates
-          setCurrentLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
-        }
-        
+        // Just use coordinates without external API
+        setCurrentLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
         setIsGettingLocation(false);
       },
       (error) => {

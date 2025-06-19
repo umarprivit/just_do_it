@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -8,24 +8,7 @@ import api from "../../services/api";
 const Login = () => {
   const { login, dispatch } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    return (
-      localStorage.getItem("theme") === "dark" ||
-      (!localStorage.getItem("theme") &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-    );
-  });
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -41,7 +24,6 @@ const Login = () => {
     };
   }, [isProfileDropdownOpen]);
 
-  const toggleDarkMode = () => setIsDark(!isDark);
   const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
 
   // Validation schema using Yup

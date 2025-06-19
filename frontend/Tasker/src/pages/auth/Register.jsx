@@ -32,19 +32,20 @@ const Register = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isProfileDropdownOpen && !event.target.closest('.profile-dropdown')) {
+      if (isProfileDropdownOpen && !event.target.closest(".profile-dropdown")) {
         setIsProfileDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
 
   const toggleDarkMode = () => setIsDark(!isDark);
-  const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  const toggleProfileDropdown = () =>
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
 
   // Validation schema using Yup
   const validationSchema = Yup.object({
@@ -60,7 +61,10 @@ const Register = () => {
       .required("Phone number is required"),
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one lowercase letter, one uppercase letter, and one number")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one lowercase letter, one uppercase letter, and one number"
+      )
       .required("Password is required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password"), null], "Passwords must match")
@@ -92,12 +96,13 @@ const Register = () => {
     try {
       const submitData = { ...values };
       delete submitData.confirmPassword; // Remove confirmPassword before sending to API
-      
+
       const { data } = await api.post("/auth/register", submitData);
       login(data, data.token);
       navigate("/");
     } catch (err) {
-      const errorMessage = err.response?.data?.error || "Registration failed. Please try again.";
+      const errorMessage =
+        err.response?.data?.error || "Registration failed. Please try again.";
       if (err.response?.status === 400) {
         // Handle specific field errors
         if (errorMessage.includes("email")) {
@@ -150,19 +155,23 @@ const Register = () => {
           />
           {/* Header */}
           <rect x="120" y="80" width="160" height="12" rx="6" fill="#3b82f6" />
-          
+
           {/* Form Fields */}
           <rect x="120" y="105" width="160" height="8" rx="4" fill="#f3f4f6" />
           <rect x="120" y="120" width="140" height="8" rx="4" fill="#f3f4f6" />
           <rect x="120" y="135" width="120" height="8" rx="4" fill="#f3f4f6" />
           <rect x="120" y="150" width="160" height="8" rx="4" fill="#f3f4f6" />
-          
+
           {/* Role Selection */}
           <circle cx="130" cy="175" r="4" fill="#fb923c" />
           <circle cx="170" cy="175" r="4" fill="#e5e7eb" />
-          <text x="140" y="180" fontSize="8" fill="#6b7280">Client</text>
-          <text x="180" y="180" fontSize="8" fill="#6b7280">Provider</text>
-          
+          <text x="140" y="180" fontSize="8" fill="#6b7280">
+            Client
+          </text>
+          <text x="180" y="180" fontSize="8" fill="#6b7280">
+            Provider
+          </text>
+
           {/* Submit Button */}
           <rect x="140" y="195" width="120" height="15" rx="8" fill="#10b981" />
         </g>
@@ -177,7 +186,7 @@ const Register = () => {
             strokeWidth="2"
             fill="none"
           />
-          
+
           <circle cx="340" cy="180" r="20" fill="#fb923c" opacity="0.2" />
           <circle cx="340" cy="175" r="6" fill="#fb923c" />
           <path
@@ -579,7 +588,8 @@ const Register = () => {
                                 ? "var(--color-bg-secondary-dark)"
                                 : "var(--color-secondary)",
                               borderColor:
-                                errors.confirmPassword && touched.confirmPassword
+                                errors.confirmPassword &&
+                                touched.confirmPassword
                                   ? "#ef4444"
                                   : isDark
                                   ? "var(--color-primary-border-dark)"
@@ -624,9 +634,14 @@ const Register = () => {
                                   : "border-gray-300 dark:border-gray-600"
                               }`}
                               style={{
-                                background: values.role === "client" 
-                                  ? isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(59, 130, 246, 0.05)"
-                                  : isDark ? "var(--color-bg-secondary-dark)" : "var(--color-secondary)",
+                                background:
+                                  values.role === "client"
+                                    ? isDark
+                                      ? "rgba(59, 130, 246, 0.1)"
+                                      : "rgba(59, 130, 246, 0.05)"
+                                    : isDark
+                                    ? "var(--color-bg-secondary-dark)"
+                                    : "var(--color-secondary)",
                               }}
                             >
                               <div className="flex items-center space-x-3">
@@ -642,9 +657,16 @@ const Register = () => {
                                   )}
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-lg" style={{
-                                    color: isDark ? "var(--color-text-primary-dark)" : "var(--color-primary-text)",
-                                  }}>Client</h3>
+                                  <h3
+                                    className="font-semibold text-lg"
+                                    style={{
+                                      color: isDark
+                                        ? "var(--color-text-primary-dark)"
+                                        : "var(--color-primary-text)",
+                                    }}
+                                  >
+                                    Client
+                                  </h3>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">
                                     I need tasks to be done
                                   </p>
@@ -667,9 +689,14 @@ const Register = () => {
                                   : "border-gray-300 dark:border-gray-600"
                               }`}
                               style={{
-                                background: values.role === "provider" 
-                                  ? isDark ? "rgba(251, 146, 60, 0.1)" : "rgba(251, 146, 60, 0.05)"
-                                  : isDark ? "var(--color-bg-secondary-dark)" : "var(--color-secondary)",
+                                background:
+                                  values.role === "provider"
+                                    ? isDark
+                                      ? "rgba(251, 146, 60, 0.1)"
+                                      : "rgba(251, 146, 60, 0.05)"
+                                    : isDark
+                                    ? "var(--color-bg-secondary-dark)"
+                                    : "var(--color-secondary)",
                               }}
                             >
                               <div className="flex items-center space-x-3">
@@ -685,9 +712,16 @@ const Register = () => {
                                   )}
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-lg" style={{
-                                    color: isDark ? "var(--color-text-primary-dark)" : "var(--color-primary-text)",
-                                  }}>Provider</h3>
+                                  <h3
+                                    className="font-semibold text-lg"
+                                    style={{
+                                      color: isDark
+                                        ? "var(--color-text-primary-dark)"
+                                        : "var(--color-primary-text)",
+                                    }}
+                                  >
+                                    Provider
+                                  </h3>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">
                                     I want to complete tasks
                                   </p>

@@ -1,27 +1,6 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 
 const Home = () => {
-  const [isDark, setIsDark] = useState(() => {
-    return (
-      localStorage.getItem("theme") === "dark" ||
-      (!localStorage.getItem("theme") &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-    );
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-
-  const toggleDarkMode = () => setIsDark(!isDark);
-
   // Animated Undraw Character - Collaboration
   const CollaborationSVG = () => (
     <div className="undraw-container animate-fade-in-up">
@@ -81,54 +60,7 @@ const Home = () => {
   );
 
   // Animated Undraw Character - Task Management
-  const TaskManagementSVG = () => (
-    <div className="undraw-container animate-fade-in-up">
-      <svg viewBox="0 0 400 300" className="hover-scale">
-        <rect
-          x="100"
-          y="50"
-          width="200"
-          height="200"
-          rx="15"
-          fill="#ffffff"
-          stroke="#e5e7eb"
-          strokeWidth="2"
-        />
-        <rect x="120" y="80" width="20" height="20" rx="4" fill="#10b981" />
-        <path
-          d="M 125 85 L 130 90 L 135 85"
-          stroke="#fff"
-          strokeWidth="2"
-          fill="none"
-        />
-        <rect x="120" y="120" width="20" height="20" rx="4" fill="#10b981" />
-        <path
-          d="M 125 125 L 130 130 L 135 125"
-          stroke="#fff"
-          strokeWidth="2"
-          fill="none"
-        />
-        <rect x="120" y="160" width="20" height="20" rx="4" fill="#e5e7eb" />
-        <rect x="150" y="85" width="100" height="3" rx="2" fill="#6b7280" />
-        <rect x="150" y="125" width="80" height="3" rx="2" fill="#6b7280" />
-        <rect x="150" y="165" width="120" height="3" rx="2" fill="#6b7280" />
-        <circle
-          cx="320"
-          cy="100"
-          r="15"
-          fill="#1e40af"
-          className="animate-float"
-        />
-        <circle
-          cx="340"
-          cy="180"
-          r="12"
-          fill=" #ea580c"
-          className="animate-float"
-        />
-      </svg>
-    </div>
-  );
+  
 
   return (
     <div className="min-h-screen clean-bg transition-colors duration-500 dark:bg-primary-dark bg-primary w-full">
@@ -162,7 +94,7 @@ const Home = () => {
                 {/* Navigation Items */}
                 <div className="flex items-center space-x-2">
                   {/* Dark Mode Toggle */}
-                  <div className="relative">
+                  {/* <div className="relative">
                     <button
                       onClick={toggleDarkMode}
                       className="relative p-3 rounded-full hover-lift transition-all duration-300  bg-accent-bg "
@@ -187,7 +119,7 @@ const Home = () => {
                         )}
                       </div>
                     </button>
-                  </div>
+                  </div> */}
                   {/* Login Button */}
                   <Link
                     to="/login"

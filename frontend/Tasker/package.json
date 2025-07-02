@@ -4,14 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host",
+    "serve": "vite preview --host --port 4173"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.10.0",
+    "connect-history-api-fallback": "^2.0.0",
     "formik": "^2.4.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

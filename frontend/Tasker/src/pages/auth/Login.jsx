@@ -4,10 +4,8 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
-import { usePageTitle } from "../../hooks/usePageTitle";
 
 const Login = () => {
-  usePageTitle("Login");
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();

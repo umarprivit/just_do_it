@@ -4,11 +4,8 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
-import { usePageTitle } from "../../hooks/usePageTitle";
 
 const OtpScreen = () => {
-  usePageTitle("Verify OTP");
-
   const navigate = useNavigate();
   const location = useLocation();
   const [isDark, setIsDark] = useState(() => {

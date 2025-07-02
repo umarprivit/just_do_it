@@ -6,7 +6,6 @@ import { useContext } from "react";
 import { ThemeContext } from "./contexts/ThemeContext";
 import Login from "./pages/auth/Login";
 import DashboardProvider from "./pages/dashboard/DashboardProvider";
-import ProtectedRoute from "./components/ProtectedRoutes";
 import PostTask from "./pages/tasks/PostTask";
 import DashboardClient from "./pages/dashboard/DashboardClient";
 import Register from "./pages/auth/Register";
@@ -17,6 +16,12 @@ import ProviderTaskDetail from "./pages/tasks/ProviderTaskDetail";
 import OtpScreen from "./pages/auth/OtpScreen";
 import ProviderCategories from "./pages/ProviderCategories";
 import NotFound from "./pages/NotFound";
+import { 
+  ProtectedRoute, 
+  PublicRoute, 
+  RoleRoute 
+} from "./components/RouteGuards";
+import { DashboardRedirect } from "./utils/authRedirects";
 
 function App() {
   const { state, toggleTheme } = useContext(ThemeContext);
@@ -42,56 +47,83 @@ function App() {
       </nav> */}
 
       <Routes>
-        <Route path="/" element={<Home />}></Route>
-        <Route path="/login" element={<Login />}></Route>
-        <Route path="/register" element={<Register />}></Route>
-        <Route path="/dashboard/client" element={<DashboardClient />}></Route>
-        <Route
-          path="/dashboard/provider"
-          element={<DashboardProvider />}
-        ></Route>
-        <Route path="/profile" element={<Profile />}></Route>
-        <Route path="/post-task" element={<PostTask />}></Route>
-        <Route path="/view/:taskId" element={<ViewTaskDetail />}></Route>
-        <Route
-          path="/tasks/:taskId/client"
-          element={<ClientTaskDetail />}
-        ></Route>
-        <Route
-          path="/tasks/:taskId/provider"
-          element={<ProviderTaskDetail />}
-        ></Route>
-        <Route path="/verify" element={<OtpScreen />}></Route>
-        <Route
-          path="/category/:category"
-          element={<ProviderCategories />}
-        ></Route>
-        <Route path="*" element={<NotFound />} />
+        {/* Root Dashboard Redirect */}
+        <Route path="/dashboard" element={<DashboardRedirect />} />
 
-        {/* <Route
-          path="/provider/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["provider"]}>
-              <DashboardProvider />
-            </ProtectedRoute>
-          }
-        ></Route> */}
-        {/* <Route
-          path="/client/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["client"]}>
-              <DashboardClient />
-            </ProtectedRoute>
-          }
-        /> */}
-        <Route
-          path="/post-task"
-          element={
-            <ProtectedRoute allowedRoles={["client"]}>
-              <PostTask />
-            </ProtectedRoute>
-          }
-        />
+        {/* Public Routes - Only accessible when NOT logged in */}
+        <Route path="/" element={
+          <PublicRoute>
+            <Home />
+          </PublicRoute>
+        } />
+        <Route path="/login" element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        <Route path="/register" element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        } />
+        <Route path="/verify" element={
+          <PublicRoute>
+            <OtpScreen />
+          </PublicRoute>
+        } />
+
+        {/* Role-Based Dashboard Routes */}
+        <Route path="/dashboard/client" element={
+          <RoleRoute requiredRole="client">
+            <DashboardClient />
+          </RoleRoute>
+        } />
+        <Route path="/dashboard/provider" element={
+          <RoleRoute requiredRole="provider">
+            <DashboardProvider />
+          </RoleRoute>
+        } />
+
+        {/* Protected Routes - Require authentication */}
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+
+        {/* Client-specific protected routes */}
+        <Route path="/post-task" element={
+          <ProtectedRoute allowedRoles={["client"]}>
+            <PostTask />
+          </ProtectedRoute>
+        } />
+        <Route path="/tasks/:taskId/client" element={
+          <ProtectedRoute allowedRoles={["client"]}>
+            <ClientTaskDetail />
+          </ProtectedRoute>
+        } />
+
+        {/* Provider-specific protected routes */}
+        <Route path="/tasks/:taskId/provider" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderTaskDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="/category/:category" element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderCategories />
+          </ProtectedRoute>
+        } />
+
+        {/* Mixed Routes - Accessible to all authenticated users */}
+        <Route path="/view/:taskId" element={
+          <ProtectedRoute>
+            <ViewTaskDetail />
+          </ProtectedRoute>
+        } />
+
+        {/* 404 Route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

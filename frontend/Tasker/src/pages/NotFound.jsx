@@ -1,8 +1,4 @@
-import { usePageTitle } from "../hooks/usePageTitle";
-
 const NotFound = () => {
-  usePageTitle("Page Not Found");
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="text-center">

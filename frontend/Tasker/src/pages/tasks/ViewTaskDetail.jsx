@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { usePageTitle } from "../../hooks/usePageTitle";
 
 const ViewTaskDetail = () => {
-  usePageTitle("Task Details");
-
   const { taskId } = useParams();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => {

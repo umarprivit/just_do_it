@@ -7,7 +7,6 @@ import morgan from "morgan";
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
-import transactionRoutes from "./routes/transactionRoutes.js";
 
 dotenv.config();
 
@@ -20,7 +19,6 @@ app.use(morgan("dev")); // Logging middleware for development
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.use("/api/transactions", transactionRoutes);
 
 // Health check
 app.get("/", (req, res) => {

@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 const Register = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -97,9 +96,8 @@ const Register = () => {
       const submitData = { ...values };
       delete submitData.confirmPassword; // Remove confirmPassword before sending to API
 
-      const { data } = await api.post("/auth/register", submitData);
-      login(data, data.token);
-      navigate("/");
+      const { data } = await api.post("/users/register", submitData);
+      navigate("/verify", { state: { email: values.email } });
     } catch (err) {
       const errorMessage =
         err.response?.data?.error || "Registration failed. Please try again.";
@@ -246,7 +244,7 @@ const Register = () => {
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="text-2xl font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300">
+                    <h1 className="text-2xl font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300 dark:text-primary">
                       DO IT!
                     </h1>
                     <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -314,7 +312,7 @@ const Register = () => {
                               )}
                             </div>
                             <div className="flex-1">
-                              <div className="font-medium text-primary-text dark:text-primary-text-dark">
+                              <div className="font-medium text-primary-text dark:text-primary">
                                 {isDark ? "Light Mode" : "Dark Mode"}
                               </div>
                               <div className="text-xs text-secondary-text dark:text-secondary-text-dark">
@@ -340,7 +338,7 @@ const Register = () => {
                               <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z" />
                             </svg>
                             <div className="flex-1">
-                              <div className="font-medium text-primary-text dark:text-primary-text-dark">
+                              <div className="font-medium text-primary-text dark:text-primary">
                                 Sign In
                               </div>
                               <div className="text-xs text-secondary-text dark:text-secondary-text-dark">

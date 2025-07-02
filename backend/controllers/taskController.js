@@ -49,6 +49,47 @@ export const createTask = async (req, res) => {
   }
 };
 
+// Get single task by ID
+export const getTask = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+    console.log("Fetching task with ID:", id);
+    // Find task and populate related data
+    const task = await Task.findById(id)
+      .populate('client', 'name email rating reviewCount createdAt')
+      .populate('provider', 'name email rating reviewCount skills')
+      .populate('bidders.user', 'name email rating reviewCount skills');
+
+    if (!task) {
+      return res.status(404).json({ 
+        success: false,
+        error: { 
+          message: "Task not found",
+          code: "TASK_NOT_FOUND"
+        }
+      });
+    }
+
+    // Return task data
+    res.status(200).json({
+      success: true,
+      data: task,
+      message: "Task retrieved successfully"
+    });
+
+  } catch (err) {
+    console.error("Error fetching task:", err);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: "Failed to retrieve task",
+        code: "SERVER_ERROR"
+      }
+    });
+  }
+};
+
 export const bookProvider = async (req, res) => {
   const { taskId, providerId } = req.body;
 
@@ -119,14 +160,14 @@ export const completeTask = async (req, res) => {
 
 // Add a bid to a task
 export const addBid = async (req, res) => {
-  const { taskId } = req.params;
+  const { id } = req.params;
 
   const bidderId = req.user._id;
 
   try {
     // Validation
-
-    const task = await Task.findById(taskId);
+    console.log("Adding bid for task:", id, "by user:", bidderId);
+    const task = await Task.findById(id);
     if (!task) {
       return res.status(404).json({ error: "Task not found" });
     }

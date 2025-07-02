@@ -1,66 +1,32 @@
 import { Link } from "react-router-dom";
+import {
+  CollaborationSVG,
+  LogoIcon,
+  ArrowRightIcon,
+  ChartIcon,
+} from "../assets/svgs";
+import { useEffect, useState } from "react";
 
 const Home = () => {
-  // Animated Undraw Character - Collaboration
-  const CollaborationSVG = () => (
-    <div className="undraw-container animate-fade-in-up">
-      <svg viewBox="0 0 400 300" className="animate-float">
-        {/* Background Elements */}
-        <circle
-          cx="350"
-          cy="50"
-          r="40"
-          fill="#3b82f6"
-          opacity="0.08"
-          className="animate-pulse"
-        />
-        <circle
-          cx="50"
-          cy="250"
-          r="30"
-          fill="#34d399"
-          opacity="0.08"
-          className="animate-pulse"
-        />
-        {/* People */}
-        <g className="animate-slide-in-left">
-          <circle cx="120" cy="80" r="25" fill="#fb923c" />
-          <rect x="100" y="105" width="40" height="60" rx="20" fill="#3b82f6" />
-          <rect x="110" y="120" width="20" height="40" fill="#60a5fa" />
-        </g>
-        <g className="animate-slide-in-right">
-          <circle cx="280" cy="80" r="25" fill="#ea580c" />
-          <rect x="260" y="105" width="40" height="60" rx="20" fill="#10b981" />
-          <rect x="270" y="120" width="20" height="40" fill="#d1fae5" />
-        </g>
-        {/* Connection Lines */}
-        <path
-          d="M 160 130 Q 200 110 240 130"
-          stroke="#1e40af"
-          strokeWidth="3"
-          fill="none"
-          className="animate-pulse"
-          strokeDasharray="5,5"
-        />
-        {/* Task Icons */}
-        <g className="animate-float">
-          <rect
-            x="180"
-            y="200"
-            width="40"
-            height="30"
-            rx="8"
-            fill="#ea580c"
-            opacity="0.8"
-          />
-          <circle cx="200" cy="215" r="8" fill="#fff" />
-        </g>
-      </svg>
-    </div>
-  );
+  const [isDark, setIsDark] = useState(() => {
+    return (
+      localStorage.getItem("theme") === "dark" ||
+      (!localStorage.getItem("theme") &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+  });
 
-  // Animated Undraw Character - Task Management
-  
+  const toggleDarkMode = () => setIsDark(!isDark);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
 
   return (
     <div className="min-h-screen clean-bg transition-colors duration-500 dark:bg-primary-dark bg-primary w-full">
@@ -74,13 +40,7 @@ const Home = () => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center space-x-3 group">
                   <div className="p-3 rounded-2xl hover-lift transition-all duration-300 group-hover:scale-105 bg-primary-main">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                    </svg>
+                    <LogoIcon className="w-8 h-8 text-white" />
                   </div>
                   <div className="flex flex-col">
                     <h1 className="text-2xl dark:text-primary font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300 ">
@@ -94,7 +54,7 @@ const Home = () => {
                 {/* Navigation Items */}
                 <div className="flex items-center space-x-2">
                   {/* Dark Mode Toggle */}
-                  {/* <div className="relative">
+                  <div className="relative">
                     <button
                       onClick={toggleDarkMode}
                       className="relative p-3 rounded-full hover-lift transition-all duration-300  bg-accent-bg "
@@ -119,7 +79,7 @@ const Home = () => {
                         )}
                       </div>
                     </button>
-                  </div> */}
+                  </div>
                   {/* Login Button */}
                   <Link
                     to="/login"
@@ -133,13 +93,7 @@ const Home = () => {
                   <Link to="/register" className="relative group">
                     <div className="btn-primary px-6 py-3 rounded-xl flex items-center space-x-2 transition-all duration-300 bg-primary-main text-white ">
                       <span>Register</span>
-                      <svg
-                        className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-                      </svg>
+                      <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </Link>
                 </div>
@@ -188,24 +142,12 @@ const Home = () => {
                 <Link to="/post-task" className="group">
                   <div className="btn-primary px-8 py-4 text-lg hover-lift flex items-center justify-center space-x-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl bg-primary-main text-white">
                     <span>Post a Task</span>
-                    <svg
-                      className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-                    </svg>
+                    <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
                 </Link>
-                <Link to="/provider/dashboard" className="group">
+                <Link to="/register" className="group">
                   <div className="px-8 py-4 text-lg hover-lift flex items-center justify-center space-x-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl dark:bg-primary-dark bg-primary text-accent-main border-2 border-solid border-accent-main">
-                    <svg
-                      className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
-                    </svg>
+                    <ChartIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
                     <span>Become a Provider</span>
                   </div>
                 </Link>

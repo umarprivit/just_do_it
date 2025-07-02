@@ -85,32 +85,53 @@ export const loginUser = async (req, res) => {
 
 // Profile
 export const getProfile = async (req, res) => {
-  res.json(req.user);
+  try {
+    const user = await User.findById(req.user._id).select('-passwordHash');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    res.json({ 
+      success: true, 
+      data: user,
+      message: 'Profile retrieved successfully' 
+    });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 };
 
 export const updateProfile = async (req, res) => {
-  const user = req.user;
-  const updates = req.body;
-
-  if (updates.password) {
-    // Validate password
-    if (updates.password.length < 6) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 6 characters long" });
+  try {
+    const { name, phone, bio, skills } = req.body;
+    
+    // Build update object
+    const updates = {};
+    if (name) updates.name = name;
+    if (phone) updates.phone = phone;
+    if (bio !== undefined) updates.bio = bio;
+    if (skills && Array.isArray(skills)) updates.skills = skills;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updates,
+      { new: true, runValidators: true }
+    ).select('-passwordHash');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-    const salt = await bcrypt.genSalt(10);
-    updates.passwordHash = await bcrypt.hash(updates.password, salt);
-
-    updates.passwordHash = user.passwordHash;
-
-    delete updates.password;
+    
+    res.json({ 
+      success: true, 
+      data: user,
+      message: 'Profile updated successfully' 
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
-  // Remove plain password from updates
-
-  Object.assign(user, updates);
-  await user.save();
-  res.json(user);
 };
 
 // Search providers

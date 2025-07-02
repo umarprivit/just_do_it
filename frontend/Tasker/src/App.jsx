@@ -12,6 +12,11 @@ import DashboardClient from "./pages/dashboard/DashboardClient";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/Profile";
 import ViewTaskDetail from "./pages/tasks/ViewTaskDetail";
+import ClientTaskDetail from "./pages/tasks/ClientTaskDetail";
+import ProviderTaskDetail from "./pages/tasks/ProviderTaskDetail";
+import OtpScreen from "./pages/auth/OtpScreen";
+import ProviderCategories from "./pages/ProviderCategories";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const { state, toggleTheme } = useContext(ThemeContext);
@@ -40,11 +45,28 @@ function App() {
         <Route path="/" element={<Home />}></Route>
         <Route path="/login" element={<Login />}></Route>
         <Route path="/register" element={<Register />}></Route>
-        <Route path="/dashboard" element={<DashboardClient />}></Route>
-        <Route path="/dashboard/p" element={<DashboardProvider />}></Route>
+        <Route path="/dashboard/client" element={<DashboardClient />}></Route>
+        <Route
+          path="/dashboard/provider"
+          element={<DashboardProvider />}
+        ></Route>
         <Route path="/profile" element={<Profile />}></Route>
         <Route path="/post-task" element={<PostTask />}></Route>
         <Route path="/view/:taskId" element={<ViewTaskDetail />}></Route>
+        <Route
+          path="/tasks/:taskId/client"
+          element={<ClientTaskDetail />}
+        ></Route>
+        <Route
+          path="/tasks/:taskId/provider"
+          element={<ProviderTaskDetail />}
+        ></Route>
+        <Route path="/verify" element={<OtpScreen />}></Route>
+        <Route
+          path="/category/:category"
+          element={<ProviderCategories />}
+        ></Route>
+        <Route path="*" element={<NotFound />} />
 
         {/* <Route
           path="/provider/dashboard"

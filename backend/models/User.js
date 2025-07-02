@@ -8,10 +8,11 @@ const userSchema = new mongoose.Schema(
     phone: { type: String },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["client", "provider"], required: true },
+    bio: { type: String, maxlength: 500 },
     skills: [{ type: String }], // for providers
     isVerified: { type: Boolean, default: false },
     rating: { type: Number, default: 0 },
-    reviewCount: { type: Number, default: 0 },
+    reviewCount: [{ type: Object }],
     points: { type: Number, default: 0 },
   },
   {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { 
   createTask, 
+  getTask,
   bookProvider, 
   acceptBooking, 
   providerUpdateStatus, 
@@ -23,9 +24,17 @@ const router = express.Router();
 // Get all tasks with pagination and filtering
 router.get('/', getAllTasks);
 
-// Client actions
+// Get task-related data (specific routes first)
+router.get('/my-bids', protect, getMyBids);
+router.get('/stats', protect, getTaskStats);
+router.get('/my-tasks', protect, getMyTasks);
+
+// Get single task by ID
+router.get('/:id', getTask);
+
+// Get task bids
+router.get('/:id/bids', protect, getTaskBids);
 router.post('/', protect, createTask);
-router.post('/book', protect, bookProvider);
 router.post('/:id/assign', protect, assignTask);
 router.put('/:id', protect, updateTask);
 router.delete('/:id', protect, deleteTask);
@@ -37,12 +46,5 @@ router.post('/:id/bid', protect, addBid);
 
 // Common actions
 router.put('/:id/complete', protect, completeTask);
-
-// Get task-related data
-router.get('/:id/bids', protect, getTaskBids);
-router.get('/my-bids', protect, getMyBids);
-router.get('/stats', protect, getTaskStats);
-router.get('/platform-stats', getPlatformStats);
-router.get('/my-tasks', protect, getMyTasks);
 
 export default router;

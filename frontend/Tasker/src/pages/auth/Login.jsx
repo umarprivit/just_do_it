@@ -1,30 +1,50 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 
 const Login = () => {
-  const { login, dispatch } = useAuth();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    return (
+      localStorage.getItem("theme") === "dark" ||
+      (!localStorage.getItem("theme") &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+  });
+  const toggleDarkMode = () => setIsDark(!isDark);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isProfileDropdownOpen && !event.target.closest('.profile-dropdown')) {
+      if (isProfileDropdownOpen && !event.target.closest(".profile-dropdown")) {
         setIsProfileDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
 
-  const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  const toggleProfileDropdown = () =>
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
 
   // Validation schema using Yup
   const validationSchema = Yup.object({
@@ -46,17 +66,15 @@ const Login = () => {
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", values);
+      const res = await api.post("/users/login", values);
       login({ user: res.data, token: res.data.token });
+      // Handle successful login (e.g., redirect or show a success message)
+      setSubmitting(false);
+      navigate("/dashboard/client");
     } catch (err) {
       const errorMessage = err.response?.data?.error || "Login failed";
       if (err.response?.status === 401) {
         setFieldError("password", "Invalid email or password");
-      } else {
-        dispatch({
-          type: "AUTH_ERROR",
-          payload: errorMessage,
-        });
       }
     } finally {
       setIsLoading(false);
@@ -65,6 +83,7 @@ const Login = () => {
   };
 
   // Login Illustration SVG
+
   const LoginSVG = () => (
     <div className="undraw-container animate-fade-in-up">
       <svg viewBox="0 0 400 300" className="animate-float">
@@ -166,7 +185,7 @@ const Login = () => {
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="text-2xl font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300">
+                    <h1 className="text-2xl font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300 dark:text-primary">
                       DO IT!
                     </h1>
                     <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -234,7 +253,7 @@ const Login = () => {
                               )}
                             </div>
                             <div className="flex-1">
-                              <div className="font-medium text-primary-text dark:text-primary-text-dark">
+                              <div className="font-medium text-primary-text dark:text-primary">
                                 {isDark ? "Light Mode" : "Dark Mode"}
                               </div>
                               <div className="text-xs text-secondary-text dark:text-secondary-text-dark">
@@ -260,7 +279,7 @@ const Login = () => {
                               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
                             </svg>
                             <div className="flex-1">
-                              <div className="font-medium text-primary-text dark:text-primary-text-dark">
+                              <div className="font-medium text-primary-text dark:text-primary ">
                                 Create Account
                               </div>
                               <div className="text-xs text-secondary-text dark:text-secondary-text-dark">

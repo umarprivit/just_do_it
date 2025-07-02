@@ -284,3 +284,70 @@ html, body {
     background: rgba(30, 41, 59, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Component Utilities */
+.clean-bg {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.dark .clean-bg {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+.clean-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+}
+
+.dark .clean-card {
+    background: rgba(31, 41, 55, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Button Utilities */
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary-main) 0%, var(--color-primary-hover) 100%);
+    transition: all 300ms var(--ease-out);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary-main) 100%);
+    box-shadow: var(--shadow-lg);
+}
+
+.dark .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary-main-dark) 0%, var(--color-primary-hover-dark) 100%);
+}
+
+.dark .btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-hover-dark) 0%, var(--color-primary-main-dark) 100%);
+}
+
+.btn-secondary {
+    background: transparent;
+    transition: all 300ms var(--ease-out);
+}
+
+.btn-secondary:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.dark .btn-secondary:hover {
+    background: rgba(96, 165, 250, 0.1);
+}
+
+/* Text Gradients */
+.text-gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary-main) 0%, var(--color-accent-main) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dark .text-gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary-main-dark) 0%, var(--color-accent-main-dark) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

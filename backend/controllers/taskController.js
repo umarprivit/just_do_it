@@ -49,47 +49,6 @@ export const createTask = async (req, res) => {
   }
 };
 
-// Get single task by ID
-export const getTask = async (req, res) => {
-  try {
-
-    const { id } = req.params;
-    console.log("Fetching task with ID:", id);
-    // Find task and populate related data
-    const task = await Task.findById(id)
-      .populate('client', 'name email rating reviewCount createdAt')
-      .populate('provider', 'name email rating reviewCount skills')
-      .populate('bidders.user', 'name email rating reviewCount skills');
-
-    if (!task) {
-      return res.status(404).json({ 
-        success: false,
-        error: { 
-          message: "Task not found",
-          code: "TASK_NOT_FOUND"
-        }
-      });
-    }
-
-    // Return task data
-    res.status(200).json({
-      success: true,
-      data: task,
-      message: "Task retrieved successfully"
-    });
-
-  } catch (err) {
-    console.error("Error fetching task:", err);
-    return res.status(500).json({
-      success: false,
-      error: {
-        message: "Failed to retrieve task",
-        code: "SERVER_ERROR"
-      }
-    });
-  }
-};
-
 export const bookProvider = async (req, res) => {
   const { taskId, providerId } = req.body;
 
@@ -137,7 +96,6 @@ export const completeTask = async (req, res) => {
   if (!task) return res.status(404).json({ error: "Task not found" });
 
   task.status = "completed";
-  task.completedAt = new Date();
   await task.save();
 
   // TODO: Award points to both users
@@ -160,14 +118,14 @@ export const completeTask = async (req, res) => {
 
 // Add a bid to a task
 export const addBid = async (req, res) => {
-  const { id } = req.params;
+  const { taskId } = req.params;
 
   const bidderId = req.user._id;
 
   try {
     // Validation
-    console.log("Adding bid for task:", id, "by user:", bidderId);
-    const task = await Task.findById(id);
+
+    const task = await Task.findById(taskId);
     if (!task) {
       return res.status(404).json({ error: "Task not found" });
     }
@@ -430,15 +388,15 @@ export const getAllTasks = async (req, res) => {
 
     // Build query object
     const query = {};
-
+    
     if (status) {
       query.status = status;
     }
-
+    
     if (category) {
       query.category = category;
     }
-
+    
     if (minBudget || maxBudget) {
       query.budget = {};
       if (minBudget) query.budget.$gte = parseFloat(minBudget);
@@ -462,29 +420,9 @@ export const getAllTasks = async (req, res) => {
       .skip(skip)
       .limit(limitNumber);
 
-    // Format tasks to match the required response structure
-    const formattedTasks = tasks.map((task) => ({
-      id: task._id,
-      title: task.title,
-      description: task.description,
-      category: task.category,
-      budget: task.budget,
-      status: task.status,
-      deadline: task.deadline
-        ? new Date(task.deadline).toISOString().split("T")[0]
-        : null,
-      bids: task.bidders ? task.bidders.length : 0,
-      createdAt: new Date(task.createdAt).toISOString().split("T")[0],
-      priority: task.urgency || "medium",
-      assignedTo: task.assignedTo ? task.assignedTo.name : null,
-      completedAt: task.completedAt
-        ? new Date(task.completedAt).toISOString().split("T")[0]
-        : null,
-    }));
-
     // Format response with pagination info
     const response = {
-      tasks: formattedTasks,
+      tasks,
       pagination: {
         currentPage: pageNumber,
         totalPages,
@@ -498,280 +436,6 @@ export const getAllTasks = async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-// Get platform-wide statistics (global stats)
-export const getPlatformStats = async (req, res) => {
-  try {
-    // Get all tasks
-    const allTasks = await Task.find();
-
-    // Calculate platform-wide statistics
-    const totalTasks = allTasks.length;
-
-    const tasksByStatus = {
-      open: allTasks.filter((task) => task.status === "open").length,
-      assigned: allTasks.filter((task) => task.status === "assigned").length,
-      inProgress: allTasks.filter((task) => task.status === "in-progress")
-        .length,
-      completed: allTasks.filter((task) => task.status === "completed").length,
-      cancelled: allTasks.filter((task) => task.status === "cancelled").length,
-    };
-
-    // Calculate tasks by category
-    const tasksByCategory = allTasks.reduce((acc, task) => {
-      acc[task.category] = (acc[task.category] || 0) + 1;
-      return acc;
-    }, {});
-
-    // Calculate total platform revenue (sum of budgets for completed tasks)
-    const totalRevenue = allTasks
-      .filter((task) => task.status === "completed")
-      .reduce((sum, task) => sum + (task.budget || 0), 0);
-
-    // Calculate total bids across all tasks
-    const totalBids = allTasks.reduce(
-      (sum, task) => sum + (task.bidders?.length || 0),
-      0
-    );
-
-    // Calculate average budget
-    const averageBudget =
-      totalTasks > 0
-        ? allTasks.reduce((sum, task) => sum + (task.budget || 0), 0) /
-          totalTasks
-        : 0;
-
-    // Calculate tasks created this month
-    const currentMonth = new Date();
-    currentMonth.setDate(1);
-    currentMonth.setHours(0, 0, 0, 0);
-
-    const tasksThisMonth = allTasks.filter(
-      (task) => new Date(task.createdAt) >= currentMonth
-    ).length;
-
-    const platformStats = {
-      totalTasks,
-      tasksByStatus,
-      tasksByCategory,
-      totalRevenue,
-      totalBids,
-      averageBudget: Math.round(averageBudget * 100) / 100, // Round to 2 decimal places
-      tasksThisMonth,
-      completionRate:
-        totalTasks > 0
-          ? Math.round((tasksByStatus.completed / totalTasks) * 100)
-          : 0,
-    };
-
-    res.status(200).json(platformStats);
-  } catch (error) {
-    console.error("Error fetching platform statistics:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-// Get user's own tasks with pagination and sorting
-export const getMyTasks = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { status, category, minBudget, maxBudget } = req.query;
-
-    // Build query object - filter by client (user's own tasks)
-    const query = { client: userId };
-
-    if (status) {
-      query.status = status;
-    }
-
-    if (category) {
-      query.category = category;
-    }
-
-    if (minBudget || maxBudget) {
-      query.budget = {};
-      if (minBudget) query.budget.$gte = parseFloat(minBudget);
-      if (maxBudget) query.budget.$lte = parseFloat(maxBudget);
-    }
-
-    // Fetch tasks with pagination and sorting
-    const tasks = await Task.find(query)
-      .populate("client", "name email ")
-      .populate("assignedTo", "name email ")
-      .sort({ createdAt: -1 }); // Sort by newest first
-
-    // Format tasks to match the required response structure
-    const formattedTasks = tasks.map((task) => ({
-      id: task._id,
-      title: task.title,
-      description: task.description,
-      category: task.category,
-      budget: task.budget,
-      status: task.status,
-      deadline: task.deadline
-        ? new Date(task.deadline).toISOString().split("T")[0]
-        : null,
-      bids: task.bidders ? task.bidders.length : 0,
-      createdAt: new Date(task.createdAt).toISOString().split("T")[0],
-      priority: task.urgency || "medium",
-      assignedTo: task.assignedTo ? task.assignedTo.name : null,
-      completedAt: task.completedAt
-        ? new Date(task.completedAt).toISOString().split("T")[0]
-        : null,
-    }));
-
-    // Format response with pagination info
-    const response = {
-      tasks: formattedTasks,
-    };
-
-    res.status(200).json(response);
-  } catch (error) {
-    console.error("Error fetching user tasks:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-// Update/Edit a task
-export const updateTask = async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user._id;
-  const updateData = req.body;
-
-  try {
-    // Find the task
-    const task = await Task.findById(id);
-    if (!task) {
-      return res.status(404).json({ error: "Task not found" });
-    }
-
-    // Check if user is the task owner
-    if (task.client.toString() !== userId.toString()) {
-      return res.status(403).json({ error: "Only task owner can edit this task" });
-    }
-
-    // Check if task can be edited (only open or assigned tasks can be edited)
-    if (!["open", "assigned"].includes(task.status)) {
-      return res.status(400).json({ 
-        error: "Task cannot be edited in its current status" 
-      });
-    }
-
-    // Validate required fields if they are being updated
-    const requiredFields = ['title', 'description', 'category', 'budget', 'deadline'];
-    for (const field of requiredFields) {
-      if (updateData[field] !== undefined && !updateData[field]) {
-        return res.status(400).json({ 
-          error: `${field.charAt(0).toUpperCase() + field.slice(1)} is required` 
-        });
-      }
-    }
-
-    // Validate budget if being updated
-    if (updateData.budget !== undefined && updateData.budget <= 0) {
-      return res.status(400).json({ error: "Budget must be greater than 0" });
-    }
-
-    // Validate deadline if being updated
-    if (updateData.deadline !== undefined) {
-      const deadlineDate = new Date(updateData.deadline);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (deadlineDate < today) {
-        return res.status(400).json({ error: "Deadline must be in the future" });
-      }
-    }
-
-    // Fields that can be updated
-    const allowedUpdates = [
-      'title',
-      'description', 
-      'category',
-      'location',
-      'budget',
-      'deadline',
-      'skillsRequired',
-      'urgency',
-      'scheduledAt'
-    ];
-
-    // Filter only allowed updates
-    const filteredUpdates = {};
-    Object.keys(updateData).forEach(key => {
-      if (allowedUpdates.includes(key)) {
-        filteredUpdates[key] = updateData[key];
-      }
-    });
-
-    // Add updatedAt timestamp
-    filteredUpdates.updatedAt = new Date();
-
-    // Update the task
-    const updatedTask = await Task.findByIdAndUpdate(
-      id,
-      filteredUpdates,
-      { new: true, runValidators: true }
-    ).populate("client", "name email")
-     .populate("assignedTo", "name email");
-
-    res.status(200).json({
-      message: "Task updated successfully",
-      task: updatedTask
-    });
-
-  } catch (error) {
-    console.error("Error updating task:", error);
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ error: error.message });
-    }
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-// Delete a task
-export const deleteTask = async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user._id;
-
-  try {
-    // Find the task
-    const task = await Task.findById(id);
-    if (!task) {
-      return res.status(404).json({ error: "Task not found" });
-    }
-
-    // Check if user is the task owner
-    if (task.client.toString() !== userId.toString()) {
-      return res.status(403).json({ error: "Only task owner can delete this task" });
-    }
-
-    // Check if task can be deleted (only open tasks or assigned tasks without progress can be deleted)
-    if (!["open", "assigned"].includes(task.status)) {
-      return res.status(400).json({ 
-        error: "Task cannot be deleted in its current status. Only open or assigned tasks can be deleted." 
-      });
-    }
-
-    // If task is assigned, we might want to notify the assigned provider
-    if (task.status === "assigned" && task.assignedTo) {
-      // TODO: Send notification to assigned provider about task cancellation
-      console.log(`Task ${task._id} deleted - should notify assigned provider ${task.assignedTo}`);
-    }
-
-    // Delete the task
-    await Task.findByIdAndDelete(id);
-
-    res.status(200).json({
-      message: "Task deleted successfully",
-      deletedTaskId: id
-    });
-
-  } catch (error) {
-    console.error("Error deleting task:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

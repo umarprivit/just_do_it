@@ -78,7 +78,7 @@ export const loginUser = async (req, res) => {
       res.status(401).json({ error: "Invalid credentials - Wrong password" });
     }
   } catch (error) {
-    console.log("error in login method ",error);
+    console.log("error in login method ", error);
     res.status(500).json({ error: "Server error during login" });
   }
 };
@@ -91,7 +91,6 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   const user = req.user;
   const updates = req.body;
-
 
   if (updates.password) {
     // Validate password
@@ -146,6 +145,10 @@ export const verifyOtpAndCreateUser = async (req, res) => {
 
   try {
     const { name, email, phone, password, role, skills } = pending.data;
+    // split skills by comma and trim whitespace
+    const skillsArray = skills
+      ? skills.split(",").map((skill) => skill.trim())
+      : [];
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -157,7 +160,7 @@ export const verifyOtpAndCreateUser = async (req, res) => {
       phone,
       passwordHash, // Use the hash we just created
       role,
-      skills: role === "provider" ? skills : [],
+      skills: role === "provider" ? skillsArray : [],
       isVerified: true,
       rating: 0,
       reviewCount: 0,

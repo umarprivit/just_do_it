@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import api from "../../services/api";
 
 const DashboardProvider = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => {
     return (
@@ -138,85 +139,7 @@ const DashboardProvider = () => {
     }
   };
 
-  // Provider Dashboard SVG Illustration
-  const ProviderDashboardSVG = () => (
-    <div className="undraw-container animate-fade-in-up">
-      <svg viewBox="0 0 400 200" className="animate-float">
-        {/* Background Elements */}
-        <circle
-          cx="350"
-          cy="30"
-          r="20"
-          fill="#3b82f6"
-          opacity="0.1"
-          className="animate-pulse"
-        />
-        <circle
-          cx="50"
-          cy="170"
-          r="15"
-          fill="#fb923c"
-          opacity="0.1"
-          className="animate-pulse"
-        />
-        {/* Laptop with Tasks */}
-        <g className="animate-slide-in-left">
-          <rect
-            x="100"
-            y="60"
-            width="200"
-            height="120"
-            rx="8"
-            fill="#f8fafc"
-            stroke="#e2e8f0"
-            strokeWidth="2"
-          />
-          <rect x="110" y="70" width="180" height="90" rx="4" fill="#ffffff" />
-          <rect
-            x="120"
-            y="80"
-            width="160"
-            height="20"
-            rx="4"
-            fill="#3b82f6"
-            opacity="0.8"
-          />
-          <rect
-            x="120"
-            y="110"
-            width="160"
-            height="20"
-            rx="4"
-            fill="#fb923c"
-            opacity="0.8"
-          />
-          <rect
-            x="120"
-            y="140"
-            width="160"
-            height="20"
-            rx="4"
-            fill="#10b981"
-            opacity="0.8"
-          />
-        </g>
-        {/* Provider Character */}
-        <g className="animate-slide-in-right">
-          <circle cx="320" cy="100" r="25" fill="#fbbf24" />
-          <rect x="310" y="125" width="20" height="40" rx="10" fill="#3b82f6" />
-          <circle cx="315" cy="95" r="3" fill="#1f2937" />
-          <circle cx="325" cy="95" r="3" fill="#1f2937" />
-          <path
-            d="M315 105 Q320 110 325 105"
-            stroke="#1f2937"
-            strokeWidth="2"
-            fill="none"
-          />
-        </g>
-      </svg>
-    </div>
-  );
-
+  
   // Handle one-click apply
   const handleApply = (taskId) => {
     if (!appliedTaskIds.includes(taskId)) {

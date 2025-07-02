@@ -2,8 +2,13 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useAuth } from "../contexts/AuthContext";
+import api from "../services/api";
 
 const Profile = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   const [isDark, setIsDark] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||

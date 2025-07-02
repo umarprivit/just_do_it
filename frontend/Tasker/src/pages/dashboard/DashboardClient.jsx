@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import api from "../../services/api";
+import { StatsSkeleton, TaskCardSkeleton } from "../../components/skeletons";
+import { EditTaskDialog } from "../../components/dialogs";
 
 const DashboardClient = () => {
   const { logout } = useAuth();

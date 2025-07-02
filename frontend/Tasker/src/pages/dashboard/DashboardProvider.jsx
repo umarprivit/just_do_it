@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const DashboardProvider = () => {
+  usePageTitle("Provider Dashboard");
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => {
@@ -155,7 +158,6 @@ const DashboardProvider = () => {
     }
   };
 
-  
   // Handle one-click apply
   // const handleApply = (taskId) => {
   //   if (!appliedTaskIds.includes(taskId)) {

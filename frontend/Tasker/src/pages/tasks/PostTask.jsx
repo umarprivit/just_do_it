@@ -9,8 +9,11 @@ import {
   UserIcon,
 } from "../../assets/svgs";
 import api from "../../services/api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const PostTask = () => {
+  usePageTitle("Post New Task");
+
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => {
     return (

@@ -6,8 +6,11 @@ import {
   ChartIcon,
 } from "../assets/svgs";
 import { useEffect, useState } from "react";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const Home = () => {
+  usePageTitle("Home");
+
   const [isDark, setIsDark] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||

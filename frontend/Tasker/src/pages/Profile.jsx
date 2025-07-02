@@ -4,8 +4,11 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const Profile = () => {
+  usePageTitle("Profile");
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 

@@ -4,8 +4,10 @@ import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 import { StatsSkeleton, TaskCardSkeleton } from "../../components/skeletons";
 import { EditTaskDialog } from "../../components/dialogs";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const DashboardClient = () => {
+  usePageTitle("Client Dashboard");
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => {

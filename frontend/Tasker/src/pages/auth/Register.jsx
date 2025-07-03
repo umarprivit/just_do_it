@@ -5,8 +5,11 @@ import * as Yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const Register = () => {
+  usePageTitle("Register");
+
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -500,7 +503,7 @@ const Register = () => {
                           style={{
                             background: isDark
                               ? "var(--color-bg-secondary-dark)"
-                              : "var(--color-secondary)",
+                                : "var(--color-secondary)",
                             borderColor:
                               errors.phone && touched.phone
                                 ? "#ef4444"

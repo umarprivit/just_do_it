@@ -9,8 +9,11 @@ import {
   UserIcon,
 } from "../../assets/svgs";
 import api from "../../services/api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const PostTask = () => {
+  usePageTitle("Post New Task");
+
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => {
     return (
@@ -22,6 +25,7 @@ const PostTask = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     if (isDark) {
@@ -145,61 +149,26 @@ const PostTask = () => {
     "Other",
   ];
 
-  // Post Task SVG Illustration
-  const PostTaskSVG = () => (
-    <div className="undraw-container animate-fade-in-up">
-      <svg viewBox="0 0 400 300" className="animate-float">
-        {/* Background Elements */}
-        <circle
-          cx="350"
-          cy="50"
-          r="25"
-          fill="#3b82f6"
-          opacity="0.1"
-          className="animate-pulse"
-        />
-        <circle
-          cx="50"
-          cy="250"
-          r="20"
-          fill="#fb923c"
-          opacity="0.1"
-          className="animate-pulse"
-        />
-        {/* Task Board */}
-        <g className="animate-slide-in-left">
-          <rect
-            x="120"
-            y="60"
-            width="160"
-            height="180"
-            rx="12"
-            fill="#f8fafc"
-            stroke="#e2e8f0"
-            strokeWidth="2"
-          />
-          <rect x="135" y="80" width="130" height="15" rx="4" fill="#3b82f6" />
-          <rect x="135" y="105" width="100" height="8" rx="4" fill="#fb923c" />
-          <rect x="135" y="125" width="120" height="8" rx="4" fill="#e2e8f0" />
-          <rect x="135" y="145" width="90" height="8" rx="4" fill="#e2e8f0" />
-          <rect x="135" y="170" width="60" height="20" rx="10" fill="#10b981" />
-        </g>
-        {/* Person Character */}
-        <g className="animate-slide-in-right">
-          <circle cx="320" cy="140" r="20" fill="#fbbf24" />
-          <rect x="310" y="160" width="20" height="30" rx="10" fill="#3b82f6" />
-          <circle cx="315" cy="135" r="2" fill="#1f2937" />
-          <circle cx="325" cy="135" r="2" fill="#1f2937" />
-          <path
-            d="M315 145 Q320 150 325 145"
-            stroke="#1f2937"
-            strokeWidth="2"
-            fill="none"
-          />
-        </g>
-      </svg>
-    </div>
-  );
+  const handleSubmit = (values, { setSubmitting, resetForm }) => {
+    api
+      .post("/tasks", values)
+      .then((response) => {
+        resetForm();
+        setShowSuccessAlert(true);
+
+        // Hide alert and navigate after 1 second
+        setTimeout(() => {
+          setShowSuccessAlert(false);
+          navigate("/dashboard/client");
+        }, 1000);
+      })
+      .catch((error) => {
+        console.error("Error posting task:", error);
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  };
 
   return (
     <div className="min-h-screen clean-bg transition-colors duration-500 dark:bg-primary-dark bg-primary w-full">
@@ -213,13 +182,7 @@ const PostTask = () => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center space-x-3 group">
                   <div className="p-3 rounded-2xl hover-lift transition-all duration-300 group-hover:scale-105 bg-primary-main">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                    </svg>
+                    <LogoIcon className="w-8 h-8 text-white" />
                   </div>
                   <div className="flex flex-col">
                     <h1 className="text-2xl dark:text-primary font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300 ">
@@ -411,15 +374,7 @@ const PostTask = () => {
                 urgency: "medium",
               }}
               validationSchema={taskSchema}
-              onSubmit={(values, { setSubmitting, resetForm }) => {
-                console.log("Posting task:", values);
-                // TODO: Submit to API
-                setTimeout(() => {
-                  setSubmitting(false);
-                  resetForm();
-                  navigate("/dashboard-client");
-                }, 2000);
-              }}
+              onSubmit={handleSubmit}
             >
               {({ isSubmitting, values, setFieldValue }) => (
                 <Form className="space-y-8">
@@ -690,10 +645,10 @@ const PostTask = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex-1 px-8 py-4 btn-primary rounded-xl text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 bg-primary-main disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-8 py-4 btn-primary rounded-xl text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 bg-primary-main disabled:opacity-50 disabled:cursor-not-allowed "
                     >
                       {isSubmitting ? (
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center ">
                           <svg
                             className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                             xmlns="http://www.w3.org/2000/svg"
@@ -734,6 +689,36 @@ const PostTask = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Alert Dialog */}
+      {showSuccessAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md mx-4 transform animate-pulse">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
+                <svg
+                  className="w-8 h-8 text-green-600 dark:text-green-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Task Posted Successfully!
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Your task has been posted and providers will start applying
+                soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

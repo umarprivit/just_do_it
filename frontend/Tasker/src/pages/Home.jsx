@@ -6,8 +6,11 @@ import {
   ChartIcon,
 } from "../assets/svgs";
 import { useEffect, useState } from "react";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const Home = () => {
+  usePageTitle("Home");
+
   const [isDark, setIsDark] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||
@@ -40,13 +43,7 @@ const Home = () => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center space-x-3 group">
                   <div className="p-3 rounded-2xl hover-lift transition-all duration-300 group-hover:scale-105 bg-primary-main">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                    </svg>
+                    <LogoIcon className="w-8 h-8 text-white" />
                   </div>
                   <div className="flex flex-col">
                     <h1 className="text-2xl dark:text-primary font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300 ">
@@ -60,7 +57,7 @@ const Home = () => {
                 {/* Navigation Items */}
                 <div className="flex items-center space-x-2">
                   {/* Dark Mode Toggle */}
-                  {/* <div className="relative">
+                  <div className="relative">
                     <button
                       onClick={toggleDarkMode}
                       className="relative p-3 rounded-full hover-lift transition-all duration-300  bg-accent-bg "
@@ -85,7 +82,7 @@ const Home = () => {
                         )}
                       </div>
                     </button>
-                  </div> */}
+                  </div>
                   {/* Login Button */}
                   <Link
                     to="/login"
@@ -99,13 +96,7 @@ const Home = () => {
                   <Link to="/register" className="relative group">
                     <div className="btn-primary px-6 py-3 rounded-xl flex items-center space-x-2 transition-all duration-300 bg-primary-main text-white ">
                       <span>Register</span>
-                      <svg
-                        className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-                      </svg>
+                      <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </Link>
                 </div>
@@ -154,24 +145,12 @@ const Home = () => {
                 <Link to="/post-task" className="group">
                   <div className="btn-primary px-8 py-4 text-lg hover-lift flex items-center justify-center space-x-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl bg-primary-main text-white">
                     <span>Post a Task</span>
-                    <svg
-                      className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-                    </svg>
+                    <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
                 </Link>
                 <Link to="/register" className="group">
                   <div className="px-8 py-4 text-lg hover-lift flex items-center justify-center space-x-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl dark:bg-primary-dark bg-primary text-accent-main border-2 border-solid border-accent-main">
-                    <svg
-                      className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
-                    </svg>
+                    <ChartIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
                     <span>Become a Provider</span>
                   </div>
                 </Link>

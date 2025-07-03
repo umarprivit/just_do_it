@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const ProviderTaskDetail = () => {
+  usePageTitle("Task Application");
+
   const { taskId } = useParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();

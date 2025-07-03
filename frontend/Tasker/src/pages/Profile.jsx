@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const Profile = () => {
+  usePageTitle("Profile");
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -19,6 +22,17 @@ const Profile = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [updateError, setUpdateError] = useState("");
+  const [updateSuccess, setUpdateSuccess] = useState("");
+  const [profileData, setProfileData] = useState(null);
+  const [userStats, setUserStats] = useState({
+    completedTasks: 0,
+    totalEarnings: 0,
+    rating: 0,
+    reviewCount: 0,
+  });
+  const [userReviews, setUserReviews] = useState([]);
 
   useEffect(() => {
     if (isDark) {
@@ -48,105 +62,115 @@ const Profile = () => {
 
   // Profile form validation schema
   const profileSchema = Yup.object().shape({
-    firstName: Yup.string()
-      .min(2, "First name must be at least 2 characters")
-      .max(50, "First name must be less than 50 characters")
-      .required("First name is required"),
-    lastName: Yup.string()
-      .min(2, "Last name must be at least 2 characters")
-      .max(50, "Last name must be less than 50 characters")
-      .required("Last name is required"),
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
+    name: Yup.string()
+      .min(2, "Name must be at least 2 characters")
+      .max(50, "Name must be less than 50 characters")
+      .required("Name is required"),
     phone: Yup.string()
       .matches(/^[0-9+\-\s()]+$/, "Invalid phone number")
       .min(10, "Phone number must be at least 10 digits"),
-    bio: Yup.string()
-      .max(500, "Bio must be less than 500 characters"),
-    skills: Yup.string()
-      .max(200, "Skills must be less than 200 characters"),
+    bio: Yup.string().max(500, "Bio must be less than 500 characters"),
+    skills: Yup.string().max(200, "Skills must be less than 200 characters"),
   });
 
-  // Dummy user data
-  const userData = {
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    bio: "Full-stack developer with 5 years of experience in React, Node.js, and MongoDB. Passionate about creating efficient and scalable web applications.",
-    skills: "React, Node.js, MongoDB, JavaScript, TypeScript, Python",
-    joinDate: "January 2024",
-    completedTasks: 12,
-    totalEarnings: 15420,
-    rating: 4.8,
-    profileImage: null,
-    role: "provider" // Add role to determine if reviews section should show
+  // Fetch all profile data including tasks and reviews for calculations
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+
+      // Get profile data
+      const profileResponse = await api.get("/users/profile");
+      const profileData = profileResponse.data.data || profileResponse.data;
+      setProfileData(profileData);
+
+      // Fetch user's tasks to calculate completed tasks and earnings
+      let completedTasks = 0;
+      let totalEarnings = 0;
+
+      try {
+        const tasksResponse = await api.get("/tasks");
+        let allTasks = [];
+        allTasks = tasksResponse.data.tasks|| tasksResponse.data || [];
+
+        // Filter tasks that belong to this user and are completed
+        if (allTasks.length !== 0) {
+          const userCompletedTasks = allTasks.filter((task) => {
+            if (profileData.role === "provider") {
+              // For providers, count tasks they were assigned to and completed
+              return (
+                task.assignedTo === profileData._id &&
+                task.status === "completed"
+              );
+            } else {
+              // For clients, count tasks they posted and were completed
+              return (
+                task.client === profileData._id && task.status === "completed"
+              );
+            }
+          });
+        }
+        const userCompletedTasks = [];
+
+        completedTasks = userCompletedTasks.length;
+
+        // Calculate total earnings for providers
+        if (profileData.role === "provider") {
+          totalEarnings = userCompletedTasks.reduce(
+            (total, task) => total + (task.budget || 0),
+            0
+          );
+        }
+      } catch (taskError) {
+        console.error("Error fetching tasks for stats:", taskError);
+      }
+
+      // Fetch reviews for providers
+      let reviews = [];
+      if (profileData.role === "provider") {
+        try {
+          const reviewsResponse = await api.get(`/reviews/${profileData._id}`);
+          reviews = reviewsResponse.data || [];
+          setUserReviews(reviews);
+        } catch (reviewError) {
+          console.error("Error fetching reviews:", reviewError);
+          setUserReviews([]);
+        }
+      }
+
+      // Set calculated stats
+      setUserStats({
+        completedTasks,
+        totalEarnings,
+        rating: profileData.rating || 0,
+        reviewCount: reviews.length || profileData.reviewCount || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Dummy reviews data for provider
-  const userReviews = [
-    {
-      id: 1,
-      clientName: "Sarah Johnson",
-      clientAvatar: null,
-      rating: 5,
-      comment: "Excellent work! John delivered the project ahead of schedule and exceeded all expectations. His attention to detail and communication throughout the process was outstanding.",
-      taskTitle: "E-commerce Website Development",
-      date: "2025-06-15",
-      verified: true
-    },
-    {
-      id: 2,
-      clientName: "Michael Chen",
-      clientAvatar: null,
-      rating: 5,
-      comment: "Outstanding developer! Clean code, great communication, and delivered exactly what was requested. Will definitely work with John again.",
-      taskTitle: "React Dashboard Creation",
-      date: "2025-06-10",
-      verified: true
-    },
-    {
-      id: 3,
-      clientName: "Emily Rodriguez",
-      clientAvatar: null,
-      rating: 4,
-      comment: "Good work overall. The project was completed on time and met most requirements. Minor revisions were needed but John handled them professionally.",
-      taskTitle: "API Integration Project",
-      date: "2025-06-05",
-      verified: true
-    },
-    {
-      id: 4,
-      clientName: "David Thompson",
-      clientAvatar: null,
-      rating: 5,
-      comment: "Amazing experience working with John! He's very knowledgeable, responds quickly, and delivers high-quality work. Highly recommended!",
-      taskTitle: "MongoDB Database Setup",
-      date: "2025-05-28",
-      verified: true
-    },
-    {
-      id: 5,
-      clientName: "Lisa Park",
-      clientAvatar: null,
-      rating: 4,
-      comment: "Solid work and good communication. John understood the requirements well and delivered a functional solution.",
-      taskTitle: "Node.js Backend Development",
-      date: "2025-05-20",
-      verified: true
+  // Load data on component mount
+  useEffect(() => {
+    if (user) {
+      fetchProfileData();
     }
-  ];
+  }, [user]);
 
   // Show only first 3 reviews by default
-  const displayedReviews = showAllReviews ? userReviews : userReviews.slice(0, 3);
+  const displayedReviews = showAllReviews
+    ? userReviews
+    : userReviews.slice(0, 3);
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       <svg
         key={index}
         className={`w-4 h-4 ${
-          index < rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+          index < rating
+            ? "text-yellow-400"
+            : "text-gray-300 dark:text-gray-600"
         }`}
         fill="currentColor"
         viewBox="0 0 24 24"
@@ -155,6 +179,55 @@ const Profile = () => {
       </svg>
     ));
   };
+
+  // Handle form submission
+  const handleProfileUpdate = async (values, { setSubmitting }) => {
+    try {
+      setUpdateError("");
+      setUpdateSuccess("");
+
+      const skillsArray = values.skills
+        ? values.skills.split(",").map((skill) => skill.trim())
+        : [];
+
+      const updateData = {
+        name: values.name,
+        phone: values.phone,
+        bio: values.bio,
+        skills: skillsArray,
+      };
+
+      const response = await api.put("/users/profile", updateData);
+
+      // Handle different response structures
+      const updatedProfile = response.data.data || response.data;
+
+      if (response.data.success !== false) {
+        setProfileData(updatedProfile);
+        setIsEditing(false);
+        setUpdateSuccess("Profile updated successfully!");
+        // Refresh all data to get updated stats
+        await fetchProfileData();
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setUpdateError(
+        error.response?.data?.message ||
+          "Failed to update profile. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (loading) return;
+    if (!user.user) {
+      console.log("User not authenticated, redirecting to login");
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   // Profile SVG illustration
   const ProfileSVG = () => (
@@ -211,6 +284,15 @@ const Profile = () => {
     </div>
   );
 
+  // Show loading screen
+  if (loading || !profileData) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen clean-bg transition-colors duration-500 dark:bg-primary-dark bg-primary w-full">
       {/* Navigation */}
@@ -221,8 +303,8 @@ const Profile = () => {
             <div className="w-full px-6 py-4">
               <div className="flex justify-between items-center w-full">
                 {/* Logo */}
-                <Link to="/" className="flex items-center space-x-3 group">
-                  <div className="p-3 rounded-2xl hover-lift transition-all duration-300 group-hover:scale-105 bg-primary-main">
+                <Link to="/" className="flex items-center space-x-3">
+                  <div className="p-3 rounded-2xl bg-primary-main">
                     <svg
                       className="w-8 h-8 text-white"
                       fill="currentColor"
@@ -232,7 +314,7 @@ const Profile = () => {
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="text-2xl dark:text-primary font-black font-poppins text-gradient-primary group-hover:scale-105 transition-transform duration-300 ">
+                    <h1 className="text-2xl dark:text-primary font-black font-poppins text-gradient-primary">
                       DO IT!
                     </h1>
                     <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -246,7 +328,7 @@ const Profile = () => {
                   <div className="relative profile-dropdown">
                     <button
                       onClick={toggleProfileDropdown}
-                      className="relative p-3 rounded-full hover-lift transition-all duration-300 bg-blue-400 border-2 border-solid dark:border-primary-border-dark border-primary-border shadow-lg hover:shadow-xl"
+                      className="relative p-3 rounded-full bg-blue-400 border-2 border-solid dark:border-primary-border-dark border-primary-border shadow-lg"
                     >
                       <svg
                         className="w-6 h-6 text-primary"
@@ -263,8 +345,12 @@ const Profile = () => {
                         <div className="py-2">
                           {/* Dashboard Link */}
                           <Link
-                            to="/dashboard-provider"
-                            className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center space-x-3"
+                            to={
+                              user?.role === "provider"
+                                ? "/dashboard/provider"
+                                : "/dashboard/client"
+                            }
+                            className="w-full px-4 py-3 text-left flex items-center space-x-3"
                             onClick={() => setIsProfileDropdownOpen(false)}
                           >
                             <svg
@@ -290,7 +376,7 @@ const Profile = () => {
                               toggleDarkMode();
                               setIsProfileDropdownOpen(false);
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center space-x-3"
+                            className="w-full px-4 py-3 text-left flex items-center space-x-3"
                           >
                             <div className="w-6 h-6 flex items-center justify-center">
                               {isDark ? (
@@ -324,11 +410,11 @@ const Profile = () => {
                           {/* Sign Out */}
                           <button
                             onClick={() => {
-                              // Add logout logic here
-                              console.log("Logout clicked");
+                              logout();
+                              navigate("/login");
                               setIsProfileDropdownOpen(false);
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 flex items-center space-x-3"
+                            className="w-full px-4 py-3 text-left flex items-center space-x-3"
                           >
                             <svg
                               className="w-5 h-5 text-red-600 dark:text-red-400"
@@ -387,37 +473,61 @@ const Profile = () => {
               <div className="clean-card p-6 bg-gradient-to-br from-blue-50 to-orange-50 dark:from-blue-900/20 dark:to-orange-900/20 border border-primary-border dark:border-primary-border-dark shadow-lg sticky top-24">
                 <div className="text-center mb-6">
                   <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-12 h-12 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                     </svg>
                   </div>
                   <h2 className="text-2xl font-bold text-primary-text dark:text-primary mb-2">
-                    {userData.firstName} {userData.lastName}
+                    {profileData?.name || "User"}
                   </h2>
                   <p className="text-secondary-text dark:text-secondary-text-dark mb-4">
-                    Member since {userData.joinDate}
+                    Member since{" "}
+                    {profileData?.createdAt
+                      ? new Date(profileData.createdAt).toLocaleDateString(
+                          "en-US",
+                          { month: "long", year: "numeric" }
+                        )
+                      : "Unknown"}
                   </p>
                 </div>
-
                 {/* Stats */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                    <span className="text-green-700 dark:text-green-300 font-medium">Total Earnings</span>
-                    <span className="text-green-600 dark:text-green-400 font-bold">${userData.totalEarnings.toLocaleString()}</span>
+                    <span className="text-green-700 dark:text-green-300 font-medium">
+                      Total Earnings
+                    </span>
+                    <span className="text-green-600 dark:text-green-400 font-bold">
+                      ${userStats.totalEarnings.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <span className="text-blue-700 dark:text-blue-300 font-medium">Completed Tasks</span>
-                    <span className="text-blue-600 dark:text-blue-400 font-bold">{userData.completedTasks}</span>
+                    <span className="text-blue-700 dark:text-blue-300 font-medium">
+                      Completed Tasks
+                    </span>
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">
+                      {userStats.completedTasks}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                    <span className="text-yellow-700 dark:text-yellow-300 font-medium">Rating</span>
-                    <span className="text-yellow-600 dark:text-yellow-400 font-bold">{userData.rating}⭐</span>
+                    <span className="text-yellow-700 dark:text-yellow-300 font-medium">
+                      Rating
+                    </span>
+                    <span className="text-yellow-600 dark:text-yellow-400 font-bold">
+                      {userStats.rating}⭐
+                    </span>
                   </div>
-                </div>
-
+                </div>{" "}
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="w-full mt-6 px-4 py-3 btn-primary rounded-xl text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-primary-main"
+                  onClick={() => {
+                    setIsEditing(!isEditing);
+                    setUpdateError("");
+                    setUpdateSuccess("");
+                  }}
+                  className="w-full mt-6 px-4 py-3 btn-primary rounded-xl text-white font-semibold shadow-lg bg-primary-main"
                 >
                   {isEditing ? "Cancel Edit" : "Edit Profile"}
                 </button>
@@ -430,60 +540,73 @@ const Profile = () => {
                 <h3 className="text-2xl font-bold mb-6 text-primary-text dark:text-primary">
                   Profile Information
                 </h3>
-                
+
+                {/* Success/Error Messages */}
+                {updateSuccess && (
+                  <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                    <p className="text-green-800 dark:text-green-300 font-medium">
+                      {updateSuccess}
+                    </p>
+                  </div>
+                )}
+
+                {updateError && (
+                  <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl">
+                    <p className="text-red-800 dark:text-red-300 font-medium">
+                      {updateError}
+                    </p>
+                  </div>
+                )}
+
                 <Formik
-                  initialValues={userData}
-                  validationSchema={profileSchema}
-                  onSubmit={(values, { setSubmitting }) => {
-                    console.log("Profile updated:", values);
-                    setSubmitting(false);
-                    setIsEditing(false);
+                  initialValues={{
+                    name: profileData?.name || "",
+                    phone: profileData?.phone || "",
+                    bio: profileData?.bio || "",
+                    skills: profileData?.skills
+                      ? profileData.skills.join(", ")
+                      : "",
                   }}
+                  validationSchema={profileSchema}
+                  onSubmit={handleProfileUpdate}
+                  enableReinitialize={true}
                 >
                   {({ isSubmitting }) => (
                     <Form className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* First Name */}
+                      <div className="grid grid-cols-1 gap-6">
+                        {/* Name */}
                         <div>
                           <label className="block text-sm font-medium text-primary-text dark:text-primary mb-2">
-                            First Name
+                            Full Name
                           </label>
                           <Field
-                            name="firstName"
+                            name="name"
                             type="text"
                             disabled={!isEditing}
                             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-800 text-primary-text dark:text-primary disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                           />
-                          <ErrorMessage name="firstName" component="div" className="text-red-500 text-sm mt-1" />
+                          <ErrorMessage
+                            name="name"
+                            component="div"
+                            className="text-red-500 text-sm mt-1"
+                          />
                         </div>
 
-                        {/* Last Name */}
+                        {/* Email (read-only) */}
                         <div>
                           <label className="block text-sm font-medium text-primary-text dark:text-primary mb-2">
-                            Last Name
+                            Email Address
                           </label>
-                          <Field
-                            name="lastName"
-                            type="text"
-                            disabled={!isEditing}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-800 text-primary-text dark:text-primary disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
+                          <input
+                            type="email"
+                            value={profileData?.email || ""}
+                            disabled
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                           />
-                          <ErrorMessage name="lastName" component="div" className="text-red-500 text-sm mt-1" />
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Email cannot be changed
+                          </p>
                         </div>
-                      </div>
-
-                      {/* Email */}
-                      <div>
-                        <label className="block text-sm font-medium text-primary-text dark:text-primary mb-2">
-                          Email Address
-                        </label>
-                        <Field
-                          name="email"
-                          type="email"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-800 text-primary-text dark:text-primary disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-                        />
-                        <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
                       </div>
 
                       {/* Phone */}
@@ -497,7 +620,11 @@ const Profile = () => {
                           disabled={!isEditing}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-800 text-primary-text dark:text-primary disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                         />
-                        <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
+                        <ErrorMessage
+                          name="phone"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
                       </div>
 
                       {/* Bio */}
@@ -512,7 +639,11 @@ const Profile = () => {
                           disabled={!isEditing}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-800 text-primary-text dark:text-primary disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed resize-none"
                         />
-                        <ErrorMessage name="bio" component="div" className="text-red-500 text-sm mt-1" />
+                        <ErrorMessage
+                          name="bio"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
                       </div>
 
                       {/* Skills */}
@@ -526,7 +657,11 @@ const Profile = () => {
                           disabled={!isEditing}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-800 text-primary-text dark:text-primary disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                         />
-                        <ErrorMessage name="skills" component="div" className="text-red-500 text-sm mt-1" />
+                        <ErrorMessage
+                          name="skills"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
                       </div>
 
                       {/* Submit Button */}
@@ -535,14 +670,14 @@ const Profile = () => {
                           <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 px-6 py-3 btn-primary rounded-xl text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-primary-main disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-6 py-3 btn-primary rounded-xl text-white font-semibold shadow-lg bg-primary-main disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {isSubmitting ? "Saving..." : "Save Changes"}
                           </button>
                           <button
                             type="button"
                             onClick={() => setIsEditing(false)}
-                            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-medium"
+                            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium"
                           >
                             Cancel
                           </button>
@@ -556,7 +691,7 @@ const Profile = () => {
           </div>
 
           {/* Reviews Section - Only for Providers */}
-          {userData.role === "provider" && (
+          {profileData?.role === "provider" && (
             <div className="mt-12">
               <div className="clean-card p-8 border border-primary-border dark:border-primary-border-dark shadow-lg">
                 <div className="flex justify-between items-center mb-8">
@@ -566,10 +701,10 @@ const Profile = () => {
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <div className="flex items-center">
-                        {renderStars(Math.round(userData.rating))}
+                        {renderStars(Math.round(userStats.rating))}
                       </div>
                       <span className="text-lg font-semibold text-primary-text dark:text-primary">
-                        {userData.rating}
+                        {userStats.rating.toFixed(1)}
                       </span>
                       <span className="text-secondary-text dark:text-secondary-text-dark">
                         ({userReviews.length} reviews)
@@ -582,15 +717,15 @@ const Profile = () => {
                 <div className="space-y-6">
                   {displayedReviews.map((review) => (
                     <div
-                      key={review.id}
-                      className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300"
+                      key={review._id}
+                      className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700"
                     >
                       <div className="flex items-start space-x-4">
                         {/* Client Avatar */}
                         <div className="flex-shrink-0">
                           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-orange-500 rounded-full flex items-center justify-center">
                             <span className="text-white font-semibold text-lg">
-                              {review.clientName.charAt(0)}
+                              {review.reviewer?.name?.charAt(0) || "C"}
                             </span>
                           </div>
                         </div>
@@ -600,35 +735,43 @@ const Profile = () => {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-3">
                               <h4 className="font-semibold text-primary-text dark:text-primary">
-                                {review.clientName}
+                                {review.reviewer?.name || "Anonymous Client"}
                               </h4>
-                              {review.verified && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700">
-                                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                  Verified
-                                </span>
-                              )}
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700">
+                                <svg
+                                  className="w-3 h-3 mr-1"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                Verified
+                              </span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className="flex items-center">
                                 {renderStars(review.rating)}
                               </div>
                               <span className="text-sm text-secondary-text dark:text-secondary-text-dark">
-                                {new Date(review.date).toLocaleDateString()}
+                                {new Date(
+                                  review.createdAt
+                                ).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
 
                           <div className="mb-3">
                             <span className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-700">
-                              {review.taskTitle}
+                              {review.task?.title || "Task"}
                             </span>
                           </div>
 
                           <p className="text-secondary-text dark:text-secondary-text-dark leading-relaxed">
-                            {review.comment}
+                            {review.comment || "No comment provided"}
                           </p>
                         </div>
                       </div>
@@ -641,19 +784,35 @@ const Profile = () => {
                   <div className="mt-8 text-center">
                     <button
                       onClick={() => setShowAllReviews(!showAllReviews)}
-                      className="px-6 py-3 btn-secondary rounded-xl font-semibold transition-all duration-300 border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 shadow-md hover:shadow-lg"
+                      className="px-6 py-3 btn-secondary rounded-xl font-semibold border border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 shadow-md"
                     >
                       {showAllReviews ? (
                         <>
-                          <svg className="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 inline mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           Show Less Reviews
                         </>
                       ) : (
                         <>
-                          <svg className="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 inline mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           See All {userReviews.length} Reviews
                         </>
@@ -665,14 +824,23 @@ const Profile = () => {
                 {/* No Reviews State */}
                 {userReviews.length === 0 && (
                   <div className="text-center py-12">
-                    <svg className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    <svg
+                      className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <h4 className="text-lg font-medium text-secondary-text dark:text-secondary-text-dark mb-2">
                       No Reviews Yet
                     </h4>
                     <p className="text-secondary-text dark:text-secondary-text-dark">
-                      Complete your first task to start receiving reviews from clients.
+                      Complete your first task to start receiving reviews from
+                      clients.
                     </p>
                   </div>
                 )}

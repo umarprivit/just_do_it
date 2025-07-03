@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const ProviderCategories = () => {
   const { category } = useParams();
+  usePageTitle(
+    `${category ? category.charAt(0).toUpperCase() + category.slice(1) : "Category"
+    } Providers`
+  );
+
   const [isDark, setIsDark] = useState(() => {
     return (
       localStorage.getItem("theme") === "dark" ||

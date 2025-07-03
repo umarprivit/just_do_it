@@ -31,6 +31,7 @@ const DashboardClient = () => {
   const [error, setError] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("");
 
   // Fetch tasks from API
   const fetchTasks = async () => {
@@ -358,6 +359,11 @@ const DashboardClient = () => {
       </svg>
     </div>
   );
+
+  // Filtered tasks based on status
+  const filteredTasks = statusFilter
+    ? tasks.filter((task) => task.status === statusFilter)
+    : tasks;
 
   return (
     <div className="min-h-screen clean-bg transition-colors duration-500 dark:bg-primary-dark bg-primary w-full">
@@ -696,20 +702,16 @@ const DashboardClient = () => {
                 Your Tasks
               </h2>
               <div className="flex space-x-3">
-                <select className="px-4 py-2 rounded-xl border border-primary-border dark:border-primary-border-dark bg-secondary dark:bg-gray-800 dark:text-white text-primary-text dark:text-primary-text-dark focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select
+                  className="px-4 py-2 rounded-xl border border-primary-border dark:border-primary-border-dark bg-secondary dark:bg-gray-800 dark:text-white text-primary-text dark:text-primary-text-dark focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
                   <option value="">All Status</option>
                   <option value="active">Active</option>
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
                   <option value="pending_review">Pending Review</option>
-                </select>
-                <select className="px-4 py-2 rounded-xl border border-primary-border dark:border-primary-border-dark bg-secondary dark:bg-gray-800 dark:text-white text-primary-text dark:text-primary-text-dark focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">All Categories</option>
-                  <option value="web_development">Web Development</option>
-                  <option value="graphic_design">Graphic Design</option>
-                  <option value="writing">Writing</option>
-                  <option value="ui_ux">UI/UX Design</option>
-                  <option value="data_science">Data Science</option>
                 </select>
               </div>
             </div>
@@ -723,7 +725,7 @@ const DashboardClient = () => {
                   <p className="text-red-600 dark:text-red-400">{error}</p>
                 </div>
               ) : (
-                tasks.map((task) => (
+                filteredTasks.map((task) => (
                   <div
                     key={task.id}
                     className="clean-card p-6 hover-lift transition-all duration-300 border border-primary-border dark:border-primary-border-dark hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-lg group relative overflow-hidden"

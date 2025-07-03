@@ -68,8 +68,15 @@ function App() {
             </ProtectedRoute>
           }
         ></Route>
-        <Route path="/post-task" element={<PostTask />}></Route>
-        <Route path="/view/:taskId" element={<ViewTaskDetail />}></Route>
+        <Route
+          path="/post-task"
+          element={
+            <ProtectedRoute allowedRoles={["client"]}>
+              <PostTask />
+            </ProtectedRoute>
+          }
+        ></Route>
+        {/* <Route path="/view/:taskId" element={<ViewTaskDetail />}></Route> */}
         <Route
           path="/tasks/:taskId/client"
           element={

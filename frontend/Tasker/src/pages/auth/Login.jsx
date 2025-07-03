@@ -8,7 +8,7 @@ import { usePageTitle } from "../../hooks/usePageTitle";
 
 const Login = () => {
   usePageTitle("Login");
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -83,6 +83,21 @@ const Login = () => {
       setSubmitting(false);
     }
   };
+
+  // Redirect authenticated users to their dashboard based on role
+  useEffect(() => {
+    if (loading) return;
+    if (!loading && user) {
+      console.log("User:", user);
+      if (user.user.role === "client") {
+        navigate("/dashboard/client", { replace: true });
+      } else if (user.user.role === "provider") {
+        navigate("/dashboard/provider", { replace: true });
+      } else {
+        navigate("/profile", { replace: true });
+      }
+    }
+  }, [user, loading, navigate]);
 
   // Login Illustration SVG
 

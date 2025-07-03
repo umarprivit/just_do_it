@@ -689,123 +689,6 @@ const DashboardClient = () => {
             )}
           </div>
 
-          {/* Popular Categories Section */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold font-poppins text-primary-text dark:text-white mb-6">
-              Popular Categories
-            </h2>
-            <p className="text-lg text-secondary-text dark:text-secondary-text-dark mb-6">
-              Find skilled providers in these popular categories
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-              <Link
-                to="/providers/web-development"
-                className="clean-card p-6 hover-lift transition-all duration-300 hover:shadow-lg group border border-primary-border dark:border-primary-border-dark hover:border-blue-200 dark:hover:border-blue-700 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-blue-600 dark:text-blue-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M14,12L10,8L8.5,9.5L11,12L8.5,14.5L10,16L14,12M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M6,4V20H18V4H6Z" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-primary-text dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 mb-2">
-                  Web Development
-                </h3>
-                <p className="text-sm text-secondary-text dark:text-secondary-text-dark">
-                  React, Node.js, PHP
-                </p>
-              </Link>
-
-              <Link
-                to="/providers/graphic-design"
-                className="clean-card p-6 hover-lift transition-all duration-300 hover:shadow-lg group border border-primary-border dark:border-primary-border-dark hover:border-purple-200 dark:hover:border-purple-700 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-purple-600 dark:text-purple-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-primary-text dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 mb-2">
-                  Graphic Design
-                </h3>
-                <p className="text-sm text-secondary-text dark:text-secondary-text-dark">
-                  Logos, Branding, Print
-                </p>
-              </Link>
-
-              <Link
-                to="/providers/writing"
-                className="clean-card p-6 hover-lift transition-all duration-300 hover:shadow-lg group border border-primary-border dark:border-primary-border-dark hover:border-green-200 dark:hover:border-green-700 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-green-600 dark:text-green-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-primary-text dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 mb-2">
-                  Writing
-                </h3>
-                <p className="text-sm text-secondary-text dark:text-secondary-text-dark">
-                  Content, Copywriting, SEO
-                </p>
-              </Link>
-
-              <Link
-                to="/providers/ui-ux-design"
-                className="clean-card p-6 hover-lift transition-all duration-300 hover:shadow-lg group border border-primary-border dark:border-primary-border-dark hover:border-pink-200 dark:hover:border-pink-700 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/30 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-pink-600 dark:text-pink-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M5,3C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-primary-text dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300 mb-2">
-                  UI/UX Design
-                </h3>
-                <p className="text-sm text-secondary-text dark:text-secondary-text-dark">
-                  Mobile, Web, Prototyping
-                </p>
-              </Link>
-
-              <Link
-                to="/providers/data-science"
-                className="clean-card p-6 hover-lift transition-all duration-300 hover:shadow-lg group border border-primary-border dark:border-primary-border-dark hover:border-indigo-200 dark:hover:border-indigo-700 text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <svg
-                    className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M9,17H7V10H9V17M13,17H11V7H13V17M17,17H15V13H17V17M19.5,19.1H4.5V5H6.5V17.1H19.5V19.1Z" />
-                  </svg>
-                </div>
-                <h3 className="font-bold text-primary-text dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 mb-2">
-                  Data Science
-                </h3>
-                <p className="text-sm text-secondary-text dark:text-secondary-text-dark">
-                  Analytics, ML, Python
-                </p>
-              </Link>
-            </div>
-          </div>
-
           {/* Tasks Section */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-6">
@@ -1014,8 +897,10 @@ const DashboardClient = () => {
 
                     {/* Task Actions */}
                     <div className="flex space-x-2 relative z-10">
-                      <button 
-                        onClick={() => navigate(`/tasks/${task._id || task.id}/client`)}
+                      <button
+                        onClick={() =>
+                          navigate(`/tasks/${task._id || task.id}/client`)
+                        }
                         className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       >
                         View Details

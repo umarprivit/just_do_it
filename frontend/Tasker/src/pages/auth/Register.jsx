@@ -11,6 +11,7 @@ const Register = () => {
   usePageTitle("Register");
 
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     return (
@@ -44,6 +45,18 @@ const Register = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
+
+  useEffect(() => {
+    if (!loading && user) {
+      if (user.user.role === "client") {
+        navigate("/dashboard/client", { replace: true });
+      } else if (user.user.role === "provider") {
+        navigate("/dashboard/provider", { replace: true });
+      } else {
+        navigate("/profile", { replace: true });
+      }
+    }
+  }, [user, loading, navigate]);
 
   const toggleDarkMode = () => setIsDark(!isDark);
   const toggleProfileDropdown = () =>

@@ -7,9 +7,13 @@ import {
 } from "../assets/svgs";
 import { useEffect, useState } from "react";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   usePageTitle("Home");
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   const [isDark, setIsDark] = useState(() => {
     return (
@@ -30,6 +34,19 @@ const Home = () => {
       localStorage.setItem("theme", "light");
     }
   }, [isDark]);
+
+  useEffect(() => {
+    if (!loading && user) {
+      // Redirect based on user role
+      if (user.user.role === "client") {
+        navigate("/dashboard/client", { replace: true });
+      } else if (user.user.role === "provider") {
+        navigate("/dashboard/provider", { replace: true });
+      } else {
+        navigate("/profile", { replace: true });
+      }
+    }
+  }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen clean-bg transition-colors duration-500 dark:bg-primary-dark bg-primary w-full">

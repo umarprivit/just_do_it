@@ -4,12 +4,10 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
-import { usePageTitle } from "../../hooks/usePageTitle";
 
 const OtpScreen = () => {
-  usePageTitle("Verify OTP");
-
   const navigate = useNavigate();
+
   const location = useLocation();
   const [isDark, setIsDark] = useState(() => {
     return (
@@ -24,7 +22,7 @@ const OtpScreen = () => {
   const [canResend, setCanResend] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
 
   // Get email or phone from location state
   const contact =
@@ -59,6 +57,22 @@ const OtpScreen = () => {
       inputRefs.current[0].focus();
     }
   }, []);
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) return; // Wait until user is loaded and not null
+
+    // Support both user object shapes
+    const role = user.role || (user.user && user.user.role);
+    if (role === "client") {
+      navigate("/dashboard/client", { replace: true });
+    } else if (role === "provider") {
+      navigate("/dashboard/provider", { replace: true });
+    } else {
+      navigate("/profile", { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   const toggleDarkMode = () => setIsDark(!isDark);
 

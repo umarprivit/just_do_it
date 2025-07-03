@@ -15,7 +15,6 @@ import ViewTaskDetail from "./pages/tasks/ViewTaskDetail";
 import ClientTaskDetail from "./pages/tasks/ClientTaskDetail";
 import ProviderTaskDetail from "./pages/tasks/ProviderTaskDetail";
 import OtpScreen from "./pages/auth/OtpScreen";
-import ProviderCategories from "./pages/ProviderCategories";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -45,27 +44,50 @@ function App() {
         <Route path="/" element={<Home />}></Route>
         <Route path="/login" element={<Login />}></Route>
         <Route path="/register" element={<Register />}></Route>
-        <Route path="/dashboard/client" element={<DashboardClient />}></Route>
+        <Route
+          path="/dashboard/client"
+          element={
+            <ProtectedRoute allowedRoles={["client"]}>
+              <DashboardClient />
+            </ProtectedRoute>
+          }
+        ></Route>
         <Route
           path="/dashboard/provider"
-          element={<DashboardProvider />}
+          element={
+            <ProtectedRoute allowedRoles={["provider"]}>
+              <DashboardProvider />
+            </ProtectedRoute>
+          }
         ></Route>
-        <Route path="/profile" element={<Profile />}></Route>
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute allowedRoles={["provider", "client"]}>
+              <Profile />
+            </ProtectedRoute>
+          }
+        ></Route>
         <Route path="/post-task" element={<PostTask />}></Route>
         <Route path="/view/:taskId" element={<ViewTaskDetail />}></Route>
         <Route
           path="/tasks/:taskId/client"
-          element={<ClientTaskDetail />}
+          element={
+            <ProtectedRoute allowedRoles={["client"]}>
+              <ClientTaskDetail />
+            </ProtectedRoute>
+          }
         ></Route>
         <Route
           path="/tasks/:taskId/provider"
-          element={<ProviderTaskDetail />}
+          element={
+            <ProtectedRoute allowedRoles={["provider"]}>
+              <ProviderTaskDetail />
+            </ProtectedRoute>
+          }
         ></Route>
         <Route path="/verify" element={<OtpScreen />}></Route>
-        <Route
-          path="/category/:category"
-          element={<ProviderCategories />}
-        ></Route>
+
         <Route path="*" element={<NotFound />} />
 
         {/* <Route

@@ -25,7 +25,7 @@ const taskSchema = new mongoose.Schema(
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
-          required: true,
+          
         },
 
         bidDate: { type: Date, default: Date.now },
@@ -50,6 +50,7 @@ const taskSchema = new mongoose.Schema(
       default: "open",
     },
     scheduledAt: { type: Date },
+    completedAt: { type: Date },
   },
   {
     timestamps: true,

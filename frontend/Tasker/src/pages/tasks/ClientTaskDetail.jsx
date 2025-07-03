@@ -3,11 +3,8 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 import { EditTaskDialog } from "../../components/dialogs";
-import { usePageTitle } from "../../hooks/usePageTitle";
 
 const ClientTaskDetail = () => {
-  usePageTitle("My Task Details");
-
   const { taskId } = useParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();

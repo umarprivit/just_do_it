@@ -61,14 +61,14 @@ const DashboardProvider = () => {
     try {
       setLoading(true);
       const response = await api.get("/tasks");
+      console.log(response.data.tasks);
       const allTasks =
-        response.data.tasks || response.data.data || response.data || [];
+        response.data.tasks || [];
 
       // Filter tasks based on provider's perspective
       const availableTasks = allTasks.filter(
         (task) =>
-          task.status === "open" &&
-          (task.client?._id || task.client?.id || task.client) !== user._id
+          task.status === "open" 
       );
 
       const providerTasks = allTasks.filter(

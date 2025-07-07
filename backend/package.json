@@ -6,9 +6,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "build": "echo 'No build required for Node.js backend'"
+    "start": "node api.js && node server.js",
+    "dev": "node api.js && node server.js",
+    "build": "node api.js && echo 'No build required for Node.js backend'"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
